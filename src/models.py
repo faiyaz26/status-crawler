@@ -4,7 +4,7 @@ from datetime import datetime
 import calendar
 
 class Status:
-    _data = {'url' : '', 'provider' : '', 'status' : 0, 'messages' : [], 'updatedAt': None}
+    _data = {'url' : '', 'provider' : '', 'status' : 0, 'incidentMessages' : [], 'scheduledMessages' : [], 'updatedAt': None}
     
     def __init__(self):
         pass
@@ -14,14 +14,14 @@ class Status:
         self._data['provider'] = provider
         self._data['updateAt'] = calendar.timegm(datetime.utcnow().utctimetuple())
 
-    def set(self, status, message_list):
+    def set(self, status, scheduled_msg_list, incident_msg_list):
         self._data['status'] = status
-        self._data['messages'] = message_list
+        self._data['scheduledMessages'] = scheduled_msg_list
+        self._data['incidentMessages'] = incident_msg_list
         self._data['updatedAt'] = calendar.timegm(datetime.utcnow().utctimetuple())
     
     def print(self):
         print(self._data)
-        return
 
     def getJson(self):
         return json.dumps(self._data)

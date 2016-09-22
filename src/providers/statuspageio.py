@@ -33,11 +33,29 @@ class StatusPageIo :
                 'title' : d.entries[i].title,
                 'description' : d.entries[i].description,
                 'link' : d.entries[i].link,
-                'published' : d.entries[i].published
+                'publishedAt' : d.entries[i].published
             }
             messageList.append(msg)
             
         return messageList
+    
+
+    def _getScheduledMessages(self):
+        scheduledMessageList = []
+        scheduled_maintenances_container = self._dom('.scheduled-maintenances-container')
+        
+        if(len(scheduled_maintenances_container) > 0):
+            all_scheduled_msg = self._dom('.scheduled-maintenance')
+            for cur in self._dom('.scheduled-maintenance').items():
+                msg = {
+                    'title' : cur.find('.incident-title a').text().strip(),
+                    'description' : cur.find('.updates-container .update').text().strip(),
+                    'scheduledDate' : cur.find('.incident-title small').text().strip(),
+                    'publishedAt' : cur.find('.updates-container .update small').text().strip()
+                }
+                scheduledMessageList.append(msg)
+            
+        return scheduledMessageList
 
     def _parse(self):
         status_description = self._dom('.page-status span.status').html().strip();
@@ -64,8 +82,9 @@ class StatusPageIo :
                 elif html.find('impact-none') != -1:
                     status = StatusValue.non_impact
         
-        message_list = self._parseRss()
-        self._service_status.set(status, message_list)
+        scheduled_msg_list = self._getScheduledMessages()
+        incident_msg_list = self._parseRss()
+        self._service_status.set(status, scheduled_msg_list, incident_msg_list)
         self._service_status.print()
     
     def run(self):
