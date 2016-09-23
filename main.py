@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from src.providers.statuspageio import StatusPageIo
+from src.providers.statusio import StatusIo
 
-test = StatusPageIo('https://status.newrelic.com/');
+test = StatusIo('http://status.objectrocket.com/');
 
 test.run()
