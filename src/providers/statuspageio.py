@@ -1,20 +1,14 @@
 #!/usr/bin/python3
 
 from src.models import Status, StatusValue
-
+from src.providers.provider import Provider
 import requests
 from pyquery import PyQuery as pq
 import feedparser
 
-class StatusPageIo :
-    _service_status = None
-    _url = ''
-    _dom = None
-
+class StatusPageIo(Provider):
+    
     _operational_message = 'All Systems Operational'
-
-    def __init__(self):
-        pass
 
     def __init__(self, url):
         self._url = url
@@ -24,6 +18,15 @@ class StatusPageIo :
         r  = requests.get(self._url)
         self._dom = pq(r.text)
     
+    def check(self):
+        d = self._dom('.powered-by a')
+        if(len(d) == 0):
+            return False
+        else:
+            if(d.attr('href') == 'http://www.statuspage.io'):
+                return True
+            return False
+
     def _parseRss(self):
         rssUrl = self._url + 'history.rss'
         d = feedparser.parse(rssUrl)
@@ -89,4 +92,7 @@ class StatusPageIo :
     
     def run(self):
         self._getHtml()
+        if self.check() == False:
+            print("Provider doesn't match")
+            return
         self._parse()

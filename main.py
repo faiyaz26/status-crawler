@@ -1,8 +1,7 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
+# encoding: utf-8
+from src.providers.providerfactory import ProviderFactory
 
-from src.providers.statusio import StatusIo
-
-test = StatusIo('http://status.objectrocket.com/');
+test = ProviderFactory.createCrawler('StatusIo','http://status.objectrocket.com/')
 
 test.run()
