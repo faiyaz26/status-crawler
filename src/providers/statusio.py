@@ -2,8 +2,6 @@
 
 from src.models import Status, StatusValue
 from src.providers.provider import Provider
-import requests
-from pyquery import PyQuery as pq
 import feedparser
 
 class StatusIo(Provider) :
@@ -14,20 +12,10 @@ class StatusIo(Provider) :
         self._service_status = Status(url, 'status.io')
 
     def _getHtml(self):
-        r  = requests.get(self._url)
-        self._dom = pq(r.text)
-    
-    def check(self):
-        d = self._dom('#statusio_branding')
+        super()._getHtml()
 
-        if(len(d) == 0):
-            return False
-        return True
-
-
-    def _parseRss(self):
+    def _getIncidentMessage(self):
         rssUrl = self._dom('#tab_rss a').attr('href')
-        #print(rssUrl)
         d = feedparser.parse(rssUrl)
         d.entries.reverse()
         messageList = []
@@ -51,7 +39,6 @@ class StatusIo(Provider) :
             all_scheduled_msg = self._dom('div[id^="statusio_maintenance_scheduled"]')
             for cur in all_scheduled_msg.items():
                 detailed_info_dom = list(cur.find('.maintenance_section.event_inner_text').items())
-                #print(len(detailed_info_dom))
                 msg = {
                     'title' : cur.find('.maintenance_status_description').siblings('a').text().strip(),
                     'description' : detailed_info_dom[3].text().strip(),
@@ -76,10 +63,16 @@ class StatusIo(Provider) :
             status = StatusValue.unknown
         
         scheduled_msg_list = self._getScheduledMessages()
-        incident_msg_list = self._parseRss()
+        incident_msg_list = self._getIncidentMessage()
         self._service_status.set(status, scheduled_msg_list, incident_msg_list)
-        self._service_status.print()
     
+    def check(self):
+        d = self._dom('#statusio_branding')
+
+        if(len(d) == 0):
+            return False
+        return True
+
     def run(self):
         self._getHtml()
         if self.check() == False:

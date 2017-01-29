@@ -26,6 +26,9 @@ class Status:
     def getJson(self):
         return json.dumps(self._data)
 
+    def __str__(self):
+        return repr(self._data)
+
 
 class StatusValue:
     unknown     = 0

@@ -2,32 +2,21 @@
 
 from src.models import Status, StatusValue
 from src.providers.provider import Provider
-import requests
-from pyquery import PyQuery as pq
 import feedparser
 
 class StatusPageIo(Provider):
     
     _operational_message = 'All Systems Operational'
+    _BRAND_TRADE_MARK = 'http://www.statuspage.io'
 
     def __init__(self, url):
         self._url = url
         self._service_status = Status(url, 'statuspage.io')
 
     def _getHtml(self):
-        r  = requests.get(self._url)
-        self._dom = pq(r.text)
+        super()._getHtml()
     
-    def check(self):
-        d = self._dom('.powered-by a')
-        if(len(d) == 0):
-            return False
-        else:
-            if(d.attr('href') == 'http://www.statuspage.io'):
-                return True
-            return False
-
-    def _parseRss(self):
+    def _getIncidentMessage(self):
         rssUrl = self._url + 'history.rss'
         d = feedparser.parse(rssUrl)
         messageList = []
@@ -86,10 +75,15 @@ class StatusPageIo(Provider):
                     status = StatusValue.non_impact
         
         scheduled_msg_list = self._getScheduledMessages()
-        incident_msg_list = self._parseRss()
+        incident_msg_list = self._getIncidentMessage()
         self._service_status.set(status, scheduled_msg_list, incident_msg_list)
-        self._service_status.print()
     
+    def check(self):
+        d = self._dom('.powered-by a')
+        if(len(d) == 0):
+            return False
+        return d.attr('href') == self._BRAND_TRADE_MARK
+
     def run(self):
         self._getHtml()
         if self.check() == False:
